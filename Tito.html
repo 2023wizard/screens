@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lobby Display</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000; /* dark background so any gaps look intentional */
+    }
+
+    /* Make the widget fill the entire screen */
+    #widget-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Force the EscapeKit widget to take full size if possible */
+    #widget-container > * {
+      width: 100% !important;
+      height: 100% !important;
+      max-width: 100% !important;
+      max-height: 100% !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="widget-container">
+    <script async type="text/javascript" 
+            src="https://www.escapekit.co/lbwidget.js?lid=bva9y07u&active_only=true">
+    </script>
+  </div>
+</body>
+</html>
