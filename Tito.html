@@ -2,45 +2,71 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lobby Display</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Lobby Leaderboards – Tito & Voodoo Only</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #000; /* dark background so any gaps look intentional */
+      background: #000;
     }
-
-    /* Make the widget fill the entire screen */
-    #widget-container {
+    #frame-wrapper {
       width: 100vw;
       height: 100vh;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
+      overflow: hidden;
+      background: #000;
     }
-
-    /* Force the EscapeKit widget to take full size if possible */
-    #widget-container > * {
-      width: 100% !important;
-      height: 100% !important;
-      max-width: 100% !important;
-      max-height: 100% !important;
+    #leaderboard-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      transform: scale(0.82);
+      transform-origin: top center;
+    }
+    @media (min-aspect-ratio: 9/16) and (max-aspect-ratio: 10/16) {
+      #leaderboard-frame {
+        transform: scale(0.78);
+      }
     }
   </style>
 </head>
 <body>
-  <div id="widget-container">
-    <script async type="text/javascript" 
-            src="https://www.escapekit.co/lbwidget.js?lid=bva9y07u&active_only=true">
-    </script>
+  <div id="frame-wrapper">
+    <iframe id="leaderboard-frame"
+            src="https://www.escapekit.co/leaderboards/bva9y07u/?room=6068&period=30-days&active_only=true"
+            allowfullscreen
+            loading="eager">
+    </iframe>
   </div>
+
+  <script>
+    // ONLY Tito + Voodoo – nothing else
+    const frames = [
+      // 1. Tito – This Month
+      "https://www.escapekit.co/leaderboards/bva9y07u/?room=6068&period=30-days&active_only=true",
+      // 2. Voodoo – This Month
+      "https://www.escapekit.co/leaderboards/bva9y07u/?room=6069&period=30-days&active_only=true",
+      // 3. Tito – All Time
+      "https://www.escapekit.co/leaderboards/bva9y07u/?room=6068&period=all-time&active_only=true",
+      // 4. Voodoo – All Time
+      "https://www.escapekit.co/leaderboards/bva9y07u/?room=6069&period=all-time&active_only=true"
+    ];
+
+    let index = 0;
+    const iframe = document.getElementById("leaderboard-frame");
+    const INTERVAL = 7000; // 7 seconds
+
+    function nextLeaderboard() {
+      index = (index + 1) % frames.length;
+      iframe.src = frames[index];
+    }
+
+    setInterval(nextLeaderboard, INTERVAL);
+  </script>
 </body>
 </html>
