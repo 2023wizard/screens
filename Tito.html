@@ -2,54 +2,337 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Lobby Leaderboards – Tito & Voodoo</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     html, body {
       width: 100%;
       height: 100%;
       overflow: hidden;
       background: #000;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #fff;
     }
-    #leaderboard-frame {
+
+    #app {
       width: 100vw;
       height: 100vh;
-      border: none;
-      display: block;
+      display: flex;
+      flex-direction: column;
+      background: #000;
+      padding: 1.5vh 3vw 2vh;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      flex-shrink: 0;
+      margin-bottom: 1.5vh;
+    }
+
+    .room-name {
+      font-size: clamp(2.2rem, 5vw, 4.5rem);
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      line-height: 1.1;
+      margin-bottom: 0.6vh;
+    }
+
+    .period-badge {
+      display: inline-block;
+      background: #c41e1e;
+      color: #fff;
+      font-size: clamp(0.85rem, 1.6vw, 1.3rem);
+      font-weight: 700;
+      padding: 0.35em 1.1em;
+      border-radius: 999px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* Rankings list */
+    .list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      min-height: 0;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 1.2vw;
+      padding: 0.6vh 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .row:last-child {
+      border-bottom: none;
+    }
+
+    .rank {
+      font-size: clamp(1.6rem, 3.2vw, 2.8rem);
+      font-weight: 800;
+      color: #e11d1d;
+      width: 3.2vw;
+      min-width: 42px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .photo {
+      width: clamp(48px, 5.5vw, 78px);
+      height: clamp(48px, 5.5vw, 78px);
+      border-radius: 8px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #1a1a1a;
+    }
+
+    .info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.15vh;
+    }
+
+    .team-name {
+      font-size: clamp(1.1rem, 2.3vw, 2rem);
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .meta {
+      font-size: clamp(0.75rem, 1.3vw, 1.1rem);
+      color: #9ca3af;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .time {
+      font-size: clamp(1.4rem, 3vw, 2.6rem);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+      flex-shrink: 0;
+      text-align: right;
+      min-width: 5.5vw;
+    }
+
+    /* Loading / empty states */
+    .status {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      color: #9ca3af;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(255,255,255,0.15);
+      border-top-color: #e11d1d;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Subtle fade when switching views */
+    #app.fade {
+      opacity: 0.3;
+      transition: opacity 0.25s ease;
     }
   </style>
 </head>
 <body>
-  <iframe id="leaderboard-frame"
-          src="https://www.escapekit.co/leaderboards/bva9y07u/?room=6068&period=30-days&active_only=true"
-          allowfullscreen
-          loading="eager">
-  </iframe>
+  <div id="app">
+    <div class="header">
+      <div class="room-name" id="roomName">Loading…</div>
+      <div class="period-badge" id="periodBadge">—</div>
+    </div>
+    <div class="list" id="list">
+      <div class="status"><div class="spinner"></div></div>
+    </div>
+  </div>
 
   <script>
-    const frames = [
-      // 1. Tito – This Month
-      "https://www.escapekit.co/leaderboards/bva9y07u/?room=6068&period=30-days&active_only=true",
-      // 2. Voodoo – This Month
-      "https://www.escapekit.co/leaderboards/bva9y07u/?room=6069&period=30-days&active_only=true",
-      // 3. Tito – All Time
-      "https://www.escapekit.co/leaderboards/bva9y07u/?room=6068&period=all-time&active_only=true",
-      // 4. Voodoo – All Time
-      "https://www.escapekit.co/leaderboards/bva9y07u/?room=6069&period=all-time&active_only=true"
+    // ===== Configuration =====
+    const LOCATION = "bva9y07u";
+    const VIEWS = [
+      { roomId: 6068, roomName: "FIND MR TITO",      period: "30-days",  periodLabel: "LAST 30 DAYS" },
+      { roomId: 6069, roomName: "VOODOO PLANTATION", period: "30-days",  periodLabel: "LAST 30 DAYS" },
+      { roomId: 6068, roomName: "FIND MR TITO",      period: "all-time", periodLabel: "ALL TIME" },
+      { roomId: 6069, roomName: "VOODOO PLANTATION", period: "all-time", periodLabel: "ALL TIME" }
     ];
+    const INTERVAL_MS = 7000;
+    const TOP_N = 10;
 
-    let index = 0;
-    const iframe = document.getElementById("leaderboard-frame");
-    const INTERVAL = 7000; // 7 seconds
+    // CORS proxy (needed because EscapeKit does not send CORS headers)
+    const PROXY = "https://api.allorigins.win/raw?url=";
 
-    function nextLeaderboard() {
-      index = (index + 1) % frames.length;
-      iframe.src = frames[index];
+    let currentIndex = 0;
+    let isLoading = false;
+
+    // ===== DOM helpers =====
+    const app       = document.getElementById("app");
+    const roomName  = document.getElementById("roomName");
+    const periodBadge = document.getElementById("periodBadge");
+    const listEl    = document.getElementById("list");
+
+    function showLoading() {
+      listEl.innerHTML = `<div class="status"><div class="spinner"></div></div>`;
     }
 
-    // Start the rotation
-    setInterval(nextLeaderboard, INTERVAL);
+    function showEmpty(msg = "No entries on this leaderboard") {
+      listEl.innerHTML = `<div class="status">${msg}</div>`;
+    }
+
+    function showError(msg) {
+      listEl.innerHTML = `<div class="status" style="color:#f87171">${msg}</div>`;
+    }
+
+    // ===== Data extraction =====
+    function parseEntries(html) {
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const entryNodes = doc.querySelectorAll("#entries > div.relative.flex.w-full");
+      const results = [];
+
+      entryNodes.forEach((node, idx) => {
+        if (results.length >= TOP_N) return;
+
+        const img = node.querySelector("img");
+        const rankSpan = node.querySelector("span.absolute, span[class*='rounded-full']");
+        const nameSpan = node.querySelector(".font-semibold");
+        const dateDiv  = node.querySelector(".text-\\[var\\(--lb-text-secondary\\)\\], [class*='text-secondary']");
+        
+        // Players number – first bold number that is not the time
+        let players = "";
+        let time = "";
+
+        // Look for the timeremaining block specifically
+        const timeBlock = node.querySelector(".timeremaining, [class*='timeremaining']");
+        if (timeBlock) {
+          const timeVal = timeBlock.querySelector(".font-semibold");
+          if (timeVal) time = timeVal.textContent.trim();
+        }
+
+        // Players is usually the other metric
+        const metricBlocks = node.querySelectorAll("[class*='flex truncate']");
+        metricBlocks.forEach(block => {
+          if (block.classList.contains("timeremaining") || block.className.includes("timeremaining")) return;
+          const val = block.querySelector(".font-semibold");
+          if (val) {
+            const text = val.textContent.trim();
+            if (/^\d+$/.test(text)) players = text;
+          }
+        });
+
+        // Fallback: try to find any remaining time pattern
+        if (!time) {
+          const allText = node.textContent;
+          const match = allText.match(/(\d{1,2}:\d{2})/);
+          if (match) time = match[1];
+        }
+
+        const name = nameSpan ? nameSpan.textContent.trim() : (img ? img.alt : "Unknown");
+        const date = dateDiv ? dateDiv.textContent.trim() : "";
+        const photo = img ? img.src : "";
+        const rank  = rankSpan ? rankSpan.textContent.trim() : String(idx + 1);
+
+        if (name && name !== "Unknown") {
+          results.push({ rank, name, date, players, time, photo });
+        }
+      });
+
+      return results;
+    }
+
+    // ===== Render =====
+    function render(entries, view) {
+      roomName.textContent = view.roomName;
+      periodBadge.textContent = view.periodLabel;
+
+      if (!entries || entries.length === 0) {
+        showEmpty();
+        return;
+      }
+
+      listEl.innerHTML = entries.map(e => `
+        <div class="row">
+          <div class="rank">${e.rank}</div>
+          <img class="photo" src="${e.photo || ''}" alt="${e.name}" onerror="this.style.visibility='hidden'">
+          <div class="info">
+            <div class="team-name">${e.name}</div>
+            <div class="meta">${e.date}${e.players ? ' · ' + e.players + ' players' : ''}</div>
+          </div>
+          <div class="time">${e.time || '—'}</div>
+        </div>
+      `).join("");
+    }
+
+    // ===== Fetch one view =====
+    async function loadView(view) {
+      if (isLoading) return;
+      isLoading = true;
+      app.classList.add("fade");
+
+      const targetUrl = `https://www.escapekit.co/leaderboards/${LOCATION}/?room=${view.roomId}&period=${view.period}&active_only=true`;
+      const fetchUrl  = PROXY + encodeURIComponent(targetUrl);
+
+      try {
+        showLoading();
+        const res = await fetch(fetchUrl, { cache: "no-store" });
+        if (!res.ok) throw new Error("Network error " + res.status);
+        const html = await res.text();
+
+        // Basic sanity check
+        if (!html.includes("leaderboard") && !html.includes("entries")) {
+          throw new Error("Unexpected response");
+        }
+
+        const entries = parseEntries(html);
+        render(entries, view);
+      } catch (err) {
+        console.error(err);
+        showError("Could not load leaderboard");
+        roomName.textContent = view.roomName;
+        periodBadge.textContent = view.periodLabel;
+      } finally {
+        isLoading = false;
+        app.classList.remove("fade");
+      }
+    }
+
+    // ===== Rotation =====
+    function nextView() {
+      currentIndex = (currentIndex + 1) % VIEWS.length;
+      loadView(VIEWS[currentIndex]);
+    }
+
+    // Start
+    loadView(VIEWS[0]);
+    setInterval(nextView, INTERVAL_MS);
+
+    // Optional: refresh current view every 5 minutes so new scores appear sooner
+    setInterval(() => loadView(VIEWS[currentIndex]), 5 * 60 * 1000);
   </script>
 </body>
 </html>
