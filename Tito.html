@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Lobby Leaderboards – Tito & Voodoo Only</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lobby Leaderboards – Tito & Voodoo</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
@@ -12,40 +12,22 @@
       overflow: hidden;
       background: #000;
     }
-    #frame-wrapper {
+    #leaderboard-frame {
       width: 100vw;
       height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      overflow: hidden;
-      background: #000;
-    }
-    #leaderboard-frame {
-      width: 100%;
-      height: 100%;
       border: none;
-      transform: scale(0.82);
-      transform-origin: top center;
-    }
-    @media (min-aspect-ratio: 9/16) and (max-aspect-ratio: 10/16) {
-      #leaderboard-frame {
-        transform: scale(0.78);
-      }
+      display: block;
     }
   </style>
 </head>
 <body>
-  <div id="frame-wrapper">
-    <iframe id="leaderboard-frame"
-            src="https://www.escapekit.co/leaderboards/bva9y07u/?room=6068&period=30-days&active_only=true"
-            allowfullscreen
-            loading="eager">
-    </iframe>
-  </div>
+  <iframe id="leaderboard-frame"
+          src="https://www.escapekit.co/leaderboards/bva9y07u/?room=6068&period=30-days&active_only=true"
+          allowfullscreen
+          loading="eager">
+  </iframe>
 
   <script>
-    // ONLY Tito + Voodoo – nothing else
     const frames = [
       // 1. Tito – This Month
       "https://www.escapekit.co/leaderboards/bva9y07u/?room=6068&period=30-days&active_only=true",
@@ -66,6 +48,7 @@
       iframe.src = frames[index];
     }
 
+    // Start the rotation
     setInterval(nextLeaderboard, INTERVAL);
   </script>
 </body>
