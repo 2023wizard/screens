@@ -21,19 +21,19 @@
     #frame-wrapper {
       width: 100vw;
       height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
       overflow: hidden;
       background: #000;
+      position: relative;
     }
 
     #leaderboard-frame {
       width: 100%;
-      height: 100%;
+      height: 120%;                 /* a bit taller so we can shift it */
       border: none;
-      /* Slight scale so more of the list fits on the TV */
-      transform: scale(0.92);
+      position: absolute;
+      top: -18vh;                  /* pushes the podium off the top of the screen */
+      left: 0;
+      transform: scale(0.95);
       transform-origin: top center;
     }
   </style>
@@ -48,15 +48,10 @@
   </div>
 
   <script>
-    // Only Tito + Voodoo – 30 Days and All Time
     const frames = [
-      // 1. Tito – Last 30 Days
       "https://www.escapekit.co/leaderboards/bva9y07u/?room=6068&period=30-days&active_only=true",
-      // 2. Voodoo – Last 30 Days
       "https://www.escapekit.co/leaderboards/bva9y07u/?room=6069&period=30-days&active_only=true",
-      // 3. Tito – All Time
       "https://www.escapekit.co/leaderboards/bva9y07u/?room=6068&period=all-time&active_only=true",
-      // 4. Voodoo – All Time
       "https://www.escapekit.co/leaderboards/bva9y07u/?room=6069&period=all-time&active_only=true"
     ];
 
